@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Unggah Lampiran</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f0f2f5;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 2rem;
+      width: 100%;
+      max-width: 460px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: #1a1a2e;
+      margin-bottom: 4px;
+    }
+
+    .subtitle {
+      text-align: center;
+      font-size: 0.78rem;
+      color: #888;
+      margin-bottom: 1.5rem;
+    }
+
+    .drop-area {
+      border: 2px dashed #cbd5e1;
+      border-radius: 12px;
+      padding: 2rem 1rem;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      margin-bottom: 1rem;
+      color: #aaa;
+      font-size: 0.875rem;
+    }
+
+    .drop-area:hover, .drop-area.dragover {
+      border-color: #4f46e5;
+      background: #f5f3ff;
+      color: #4f46e5;
+    }
+
+    .drop-area input[type="file"] { display: none; }
+
+    .drop-icon { font-size: 2rem; margin-bottom: 8px; display: block; }
+
+    .preview-label {
+      font-size: 0.8rem;
+      color: #888;
+      margin-bottom: 8px;
+    }
+
+    .preview-box {
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      min-height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1.25rem;
+      overflow: hidden;
+      background: #fafafa;
+    }
+
+    .preview-box img {
+      max-width: 100%;
+      max-height: 200px;
+      border-radius: 10px;
+      object-fit: contain;
+    }
+
+    .preview-box .no-preview {
+      font-size: 0.8rem;
+      color: #ccc;
+      padding: 1.5rem;
+      text-align: center;
+    }
+
+    .preview-box .file-info {
+      padding: 1rem;
+      text-align: center;
+    }
+
+    .preview-box .file-info .file-icon { font-size: 2.5rem; margin-bottom: 6px; }
+    .preview-box .file-info p { font-size: 0.8rem; color: #555; word-break: break-all; }
+
+    .btn-upload {
+      width: 100%;
+      padding: 12px;
+      background: #3b82f6;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-bottom: 1rem;
+    }
+
+    .btn-upload:hover { background: #2563eb; }
+
+    .link-daftar {
+      text-align: center;
+      font-size: 0.8rem;
+    }
+
+    .link-daftar a {
+      color: #3b82f6;
+      text-decoration: none;
+    }
+
+    .link-daftar a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Unggah Lampiran</h1>
+    <p class="subtitle">Format yang dibolehkan: JPG, PNG, PDF, GIF, dll. Maks 500KB</p>
+
+    <form action="upload.php" method="post" enctype="multipart/form-data" id="uploadForm">
+      <div class="drop-area" id="dropArea" onclick="document.getElementById('fileToUpload').click()">
+        <span class="drop-icon">☁️</span>
+        <p>Klik atau tarik gambar ke sini</p>
+        <input type="file" name="fileToUpload" id="fileToUpload">
+      </div>
+
+      <p class="preview-label">Pratinjau Gambar</p>
+      <div class="preview-box" id="previewBox">
+        <p class="no-preview">Belum ada file dipilih</p>
+      </div>
+
+      <button type="submit" class="btn-upload">Unggah Sekarang</button>
+    </form>
+
+    <div class="link-daftar">
+      <a href="daftar.php">Lihat Daftar Berkas Terunggah</a>
+    </div>
+  </div>
+
+  <script>
+    const input = document.getElementById('fileToUpload');
+    const dropArea = document.getElementById('dropArea');
+    const previewBox = document.getElementById('previewBox');
+
+    input.addEventListener('change', () => showPreview(input.files[0]));
+
+    dropArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropArea.classList.add('dragover');
+    });
+
+    dropArea.addEventListener('dragleave', () => dropArea.classList.remove('dragover'));
+
+    dropArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropArea.classList.remove('dragover');
+      const file = e.dataTransfer.files[0];
+      if (file) {
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        input.files = dt.files;
+        showPreview(file);
+      }
+    });
+
+    function showPreview(file) {
+      if (!file) return;
+      const isImage = file.type.startsWith('image/');
+      if (isImage) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          previewBox.innerHTML = `<img src="${e.target.result}" alt="pratinjau">`;
+        };
+        reader.readAsDataURL(file);
+      } else {
+        const ext = file.name.split('.').pop().toUpperCase();
+        previewBox.innerHTML = `
+          <div class="file-info">
+            <div class="file-icon">📄</div>
+            <p>${file.name}</p>
+            <p style="color:#aaa; font-size:0.75rem; margin-top:4px">${ext} · ${(file.size/1024).toFixed(1)} KB</p>
+          </div>`;
+      }
+    }
+  </script>
+</body>
+</html>
